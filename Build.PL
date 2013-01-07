@@ -1,0 +1,23 @@
+use strict;
+use warnings;
+use EV::MakeMaker '$installsitearch';
+
+use Module::Build::Pluggable (
+    'XSUtil' => {
+        cc_warnings => 1,
+        ppport      => 'src/ppport.h',
+    },
+);
+
+my $build = Module::Build::Pluggable->new(
+    module_name    => 'EV::Hiredis',
+    license        => 'perl',
+    create_license => 1,
+    requires => {
+        'EV' => '0',
+    },
+    include_dirs   => ['src', "${installsitearch}/EV", $installsitearch],
+    xs_files       => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
+);
+
+$build->create_build_script;
