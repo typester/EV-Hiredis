@@ -15,6 +15,15 @@ sub new {
 
     my $loop = $args{loop} || EV::default_loop;
     my $self = $class->_new($loop);
+
+    $self->on_error($args{on_error} || sub { die @_ });
+    $self->on_connect($args{on_connect}) if $args{on_connect};
+
+    if (exists $args{host}) {
+        $self->connect($args{host}, defined $args{port} ? $args{port} : 6379);
+    }
+
+    $self;
 }
 
 1;

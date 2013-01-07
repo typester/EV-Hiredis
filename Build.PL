@@ -1,5 +1,7 @@
 use strict;
 use warnings;
+
+use Config;
 use EV::MakeMaker '$installsitearch';
 
 use Module::Build::Pluggable (
@@ -16,8 +18,11 @@ my $build = Module::Build::Pluggable->new(
     requires => {
         'EV' => '0',
     },
-    include_dirs   => ['src', "${installsitearch}/EV", $installsitearch],
-    xs_files       => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
+    include_dirs       => ['src', 'deps/hiredis', "${installsitearch}/EV", $installsitearch],
+    xs_files           => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
+    extra_linker_flags => ["deps/hiredis/libhiredis$Config{lib_ext}"],
 );
+
+$build->do_system($Config{make}, '-C', 'deps/hiredis', 'static');
 
 $build->create_build_script;
