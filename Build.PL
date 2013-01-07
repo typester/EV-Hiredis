@@ -18,6 +18,12 @@ my $build = Module::Build::Pluggable->new(
     requires => {
         'EV' => '0',
     },
+    build_requires => {
+        'Test::More'        => '0.98',
+        'Test::RedisServer' => '0.12',
+        'Test::TCP'         => '1.18',
+        'Test::Deep'        => 0,
+    },
     include_dirs       => ['src', 'deps/hiredis', "${installsitearch}/EV", $installsitearch],
     xs_files           => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
     extra_linker_flags => ["deps/hiredis/libhiredis$Config{lib_ext}"],
