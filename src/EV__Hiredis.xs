@@ -151,6 +151,46 @@ CODE:
 }
 
 void
+connect_unix(EV::Hiredis self, char* path);
+PREINIT:
+    int r;
+    SV* sv_error = NULL;
+CODE:
+{
+    if (NULL != self->ac) {
+        emit_error_str(self, "already connected");
+        return;
+    }
+
+    self->ac = redisAsyncConnectUnix(path);
+    if (NULL == self->ac) {
+        emit_error_str(self, "cannot allocate memory");
+        return;
+    }
+
+    self->ac->data = (void*)self;
+
+    if (self->ac->err) {
+        sv_error = sv_2mortal(newSVpvf("connect error: %s", self->ac->errstr));
+        redisAsyncFree(self->ac);
+        self->ac = NULL;
+        emit_error(self, sv_error);
+        return;
+    }
+
+    r = redisLibevAttach(self->loop, self->ac);
+    if (REDIS_OK != r) {
+        redisAsyncFree(self->ac);
+        self->ac = NULL;
+        emit_error_str(self, "connect error: cannot attach libev");
+        return;
+    }
+
+    redisAsyncSetConnectCallback(self->ac, (redisConnectCallback*)EV__hiredis_connect_cb);
+    redisAsyncSetDisconnectCallback(self->ac, (redisDisconnectCallback*)EV__hiredis_disconnect_cb);
+}
+
+void
 disconnect(EV::Hiredis self);
 CODE:
 {

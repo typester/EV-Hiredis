@@ -22,6 +22,9 @@ sub new {
     if (exists $args{host}) {
         $self->connect($args{host}, defined $args{port} ? $args{port} : 6379);
     }
+    elsif (exists $args{path}) {
+        $self->connect_unix($args{path});
+    }
 
     $self;
 }
