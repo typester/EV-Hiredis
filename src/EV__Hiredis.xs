@@ -78,6 +78,70 @@ static void EV__hiredis_disconnect_cb(redisAsyncContext* c, int status) {
     }
 }
 
+static SV* EV__hiredis_decode_reply(redisReply* reply) {
+    SV* res;
+
+    switch (reply->type) {
+        case REDIS_REPLY_STRING:
+        case REDIS_REPLY_ERROR:
+        case REDIS_REPLY_STATUS:
+            res = sv_2mortal(newSVpvn(reply->str, reply->len));
+            break;
+
+        case REDIS_REPLY_INTEGER:
+            res = sv_2mortal(newSViv(reply->integer));
+            break;
+        case REDIS_REPLY_NIL:
+            res = sv_2mortal(newSV(0));
+            break;
+
+        case REDIS_REPLY_ARRAY: {
+            AV* av = (AV*)sv_2mortal((SV*)newAV());
+            res = newRV_inc((SV*)av);
+
+            int i;
+            for (i = 0; i < reply->elements; i++) {
+                av_push(av, EV__hiredis_decode_reply(reply->element[i]));
+            }
+            break;
+        }
+    }
+
+    return res;
+}
+
+static void EV__hiredis_reply_cb(redisAsyncContext* c, void* reply, void* privdata) {
+    SV* cb;
+    SV* sv_reply;
+    SV* sv_undef;
+
+    cb = (SV*)privdata;
+    sv_reply = EV__hiredis_decode_reply((redisReply*)reply);
+    sv_undef = sv_2mortal(newSV(0));
+
+    dSP;
+
+    ENTER;
+    SAVETMPS;
+
+    PUSHMARK(SP);
+    if (((redisReply*)reply)->type == REDIS_REPLY_ERROR) {
+        PUSHs(sv_undef);
+        PUSHs(sv_reply);
+    }
+    else {
+        PUSHs(sv_reply);
+    }
+    PUTBACK;
+
+    call_sv(cb, G_DISCARD);
+
+    FREETMPS;
+    LEAVE;
+
+    SvREFCNT_dec(cb);
+}
+
 MODULE = EV::Hiredis PACKAGE = EV::Hiredis
 
 BOOT:
@@ -247,3 +311,43 @@ CODE:
         XSRETURN(0);
     }
 }
+
+int
+command(EV::Hiredis self, ...);
+PREINIT:
+    SV* cb;
+    char** argv;
+    size_t* argvlen;
+    STRLEN len;
+    int argc, i;
+CODE:
+{
+    if (items <= 2) {
+        croak("Usage: command(\"command\", ..., $callback)");
+    }
+
+    cb = ST(items - 1);
+    if (!(SvROK(cb) && SvTYPE(SvRV(cb)) == SVt_PVCV)) {
+        croak("last arguments should be CODE reference");
+    }
+
+    argc = items - 2;
+    Newx(argv, sizeof(char*) * argc, char*);
+    Newx(argvlen, sizeof(size_t) * argc, size_t);
+
+    for (i = 0; i < argc; i++) {
+        argv[i] = SvPV(ST(i + 1), len);
+        argvlen[i] = len;
+    }
+
+    RETVAL = redisAsyncCommandArgv(
+        self->ac, EV__hiredis_reply_cb, (void*)SvREFCNT_inc(cb),
+        argc, (const char**)argv, argvlen
+    );
+
+    Safefree(argv);
+    Safefree(argvlen);
+}
+OUTPUT:
+    RETVAL
+
