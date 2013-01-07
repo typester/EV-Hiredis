@@ -47,15 +47,21 @@ static void emit_error_str(EV__Hiredis self, char* error) {
 static void EV__hiredis_connect_cb(redisAsyncContext* c, int status) {
     EV__Hiredis self = (EV__Hiredis)c->data;
 
-    if (NULL == self->connect_handler) return;
+    if (REDIS_OK != status) {
+        self->ac = NULL;
+        emit_error_str(self, c->errstr);
+    }
+    else {
+        if (NULL == self->connect_handler) return;
 
-    ENTER;
-    SAVETMPS;
+        ENTER;
+        SAVETMPS;
 
-    call_sv(self->connect_handler, G_DISCARD);
+        call_sv(self->connect_handler, G_DISCARD);
 
-    FREETMPS;
-    LEAVE;
+        FREETMPS;
+        LEAVE;
+    }
 }
 
 static void EV__hiredis_disconnect_cb(redisAsyncContext* c, int status) {
