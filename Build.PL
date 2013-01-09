@@ -9,7 +9,6 @@ use Module::Build::Pluggable (
         cc_warnings => 1,
         ppport      => 'src/ppport.h',
     },
-    'ReadmeMarkdownFromPod',
 );
 
 my $build = Module::Build::Pluggable->new(

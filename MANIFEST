@@ -16,6 +16,7 @@ deps/hiredis/example.c
 deps/hiredis/fmacros.h
 deps/hiredis/hiredis.c
 deps/hiredis/hiredis.h
+deps/hiredis/Makefile
 deps/hiredis/net.c
 deps/hiredis/net.h
 deps/hiredis/README.md
@@ -23,7 +24,10 @@ deps/hiredis/sds.c
 deps/hiredis/sds.h
 deps/hiredis/test.c
 lib/EV/Hiredis.pm
+LICENSE
 MANIFEST			This list of files
+META.json
+META.yml
 README.mkdn
 src/EV__Hiredis.xs
 src/libev_adapter.h

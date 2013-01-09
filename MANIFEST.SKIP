@@ -18,7 +18,7 @@
 
 # Avoid Makemaker generated and utility files.
 \bMANIFEST\.bak
-\bMakefile$
+^Makefile$
 \bblib/
 \bMakeMaker-\d
 \bpm_to_blib\.ts$
@@ -73,6 +73,7 @@
 \bEV-Hiredis-[\d\.\_]+
 
 \.o$
+\.a$
 \bHiredis\.xs$
 \bHiredis\.c$
 ^\.gitmodules$
