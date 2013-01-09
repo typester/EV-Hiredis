@@ -390,7 +390,10 @@ CODE:
     ngx_queue_init(&cbt->queue);
     ngx_queue_insert_tail(&self->cb_queue, &cbt->queue);
 
-    if (0 == strcmp(argv[0], "subscribe") || 0 == strcmp(argv[0], "psubscribe")) {
+    if (0 == strcasecmp(argv[0], "subscribe")
+        || 0 == strcasecmp(argv[0], "psubscribe")
+        || 0 == strcasecmp(argv[0], "monitor")
+    ) {
         cbt->persist = 1;
     }
     else {
