@@ -29,6 +29,21 @@ sub new {
     $self;
 }
 
+our $AUTOLOAD;
+
+sub AUTOLOAD {
+    (my $method = $AUTOLOAD) =~ s/.*:://;
+
+    my $sub = sub {
+        my $self = shift;
+        $self->command($method, @_);
+    };
+
+    no strict 'refs';
+    *$method = $sub;
+    goto $sub;
+}
+
 1;
 
 =head1 NAME
