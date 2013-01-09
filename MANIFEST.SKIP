@@ -18,3 +18,5 @@
 \bHiredis\.xs$
 ^\.gitmodules$
 ^\.gitignore$
+^\.shipit$
+^\.travis\.yml$

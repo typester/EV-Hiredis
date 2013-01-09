@@ -16,7 +16,7 @@ my $build = Module::Build::Pluggable->new(
     license        => 'perl',
     create_license => 1,
     requires => {
-        'EV' => '0',
+        'EV' => '4.11',
     },
     build_requires => {
         'Test::More'        => '0.98',
