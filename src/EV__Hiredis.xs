@@ -8,8 +8,10 @@
 #include "hiredis.h"
 #include "async.h"
 #include "libev_adapter.h"
+#include "ngx-queue.h"
 
 typedef struct ev_hiredis_s ev_hiredis_t;
+typedef struct ev_hiredis_cb_s ev_hiredis_cb_t;
 
 typedef ev_hiredis_t* EV__Hiredis;
 typedef struct ev_loop* EV__Loop;
@@ -19,6 +21,13 @@ struct ev_hiredis_s {
     redisAsyncContext* ac;
     SV* error_handler;
     SV* connect_handler;
+    ngx_queue_t cb_queue; /* for long term callbacks such as subscribe */
+};
+
+struct ev_hiredis_cb_s {
+    SV* cb;
+    ngx_queue_t queue;
+    int persist;
 };
 
 static void emit_error(EV__Hiredis self, SV* error) {
@@ -42,6 +51,20 @@ static void emit_error(EV__Hiredis self, SV* error) {
 static void emit_error_str(EV__Hiredis self, char* error) {
     if (NULL == self->error_handler) return;
     emit_error(self, sv_2mortal(newSVpv(error, 0)));
+}
+
+static void remove_cb_queue(EV__Hiredis self) {
+    ngx_queue_t* q;
+    ev_hiredis_cb_t* cbt;
+
+    while (!ngx_queue_empty(&self->cb_queue)) {
+        q   = ngx_queue_last(&self->cb_queue);
+        cbt = ngx_queue_data(q, ev_hiredis_cb_t, queue);
+        ngx_queue_remove(q);
+
+        SvREFCNT_dec(cbt->cb);
+        Safefree(cbt);
+    }
 }
 
 static void EV__hiredis_connect_cb(redisAsyncContext* c, int status) {
@@ -76,6 +99,34 @@ static void EV__hiredis_disconnect_cb(redisAsyncContext* c, int status) {
         self->ac = NULL;
         emit_error(self, sv_error);
     }
+
+    remove_cb_queue(self);
+}
+
+static void connect_common(EV__Hiredis self) {
+    int r;
+    SV* sv_error = NULL;
+
+    self->ac->data = (void*)self;
+
+    r = redisLibevAttach(self->loop, self->ac);
+    if (REDIS_OK != r) {
+        redisAsyncFree(self->ac);
+        self->ac = NULL;
+        emit_error_str(self, "connect error: cannot attach libev");
+        return;
+    }
+
+    redisAsyncSetConnectCallback(self->ac, (redisConnectCallback*)EV__hiredis_connect_cb);
+    redisAsyncSetDisconnectCallback(self->ac, (redisDisconnectCallback*)EV__hiredis_disconnect_cb);
+
+    if (self->ac->err) {
+        sv_error = sv_2mortal(newSVpvf("connect error: %s", self->ac->errstr));
+        redisAsyncFree(self->ac);
+        self->ac = NULL;
+        emit_error(self, sv_error);
+        return;
+    }
 }
 
 static SV* EV__hiredis_decode_reply(redisReply* reply) {
@@ -99,7 +150,7 @@ static SV* EV__hiredis_decode_reply(redisReply* reply) {
             AV* av = (AV*)sv_2mortal((SV*)newAV());
             res = newRV_inc((SV*)av);
 
-            int i;
+            size_t i;
             for (i = 0; i < reply->elements; i++) {
                 av_push(av, EV__hiredis_decode_reply(reply->element[i]));
             }
@@ -111,35 +162,64 @@ static SV* EV__hiredis_decode_reply(redisReply* reply) {
 }
 
 static void EV__hiredis_reply_cb(redisAsyncContext* c, void* reply, void* privdata) {
-    SV* cb;
+    ev_hiredis_cb_t* cbt;
     SV* sv_reply;
     SV* sv_undef;
+    SV* sv_err;
 
-    cb = (SV*)privdata;
-    sv_reply = EV__hiredis_decode_reply((redisReply*)reply);
+    PERL_UNUSED_VAR(c);
+
+    cbt      = (ev_hiredis_cb_t*)privdata;
     sv_undef = sv_2mortal(newSV(0));
 
-    dSP;
+    if (NULL == reply) {
+        fprintf(stderr, "here error: %s\n", c->errstr);
+        sv_err = sv_2mortal(newSVpv(c->errstr, 0));
 
-    ENTER;
-    SAVETMPS;
+        dSP;
 
-    PUSHMARK(SP);
-    if (((redisReply*)reply)->type == REDIS_REPLY_ERROR) {
+        ENTER;
+        SAVETMPS;
+
+        PUSHMARK(SP);
         PUSHs(sv_undef);
-        PUSHs(sv_reply);
+        PUSHs(sv_err);
+        PUTBACK;
+
+        call_sv(cbt->cb, G_DISCARD);
+
+        FREETMPS;
+        LEAVE;
     }
     else {
-        PUSHs(sv_reply);
+        sv_reply = EV__hiredis_decode_reply((redisReply*)reply);
+
+        dSP;
+
+        ENTER;
+        SAVETMPS;
+
+        PUSHMARK(SP);
+        if (((redisReply*)reply)->type == REDIS_REPLY_ERROR) {
+            PUSHs(sv_undef);
+            PUSHs(sv_reply);
+        }
+        else {
+            PUSHs(sv_reply);
+        }
+        PUTBACK;
+
+        call_sv(cbt->cb, G_DISCARD);
+
+        FREETMPS;
+        LEAVE;
     }
-    PUTBACK;
 
-    call_sv(cb, G_DISCARD);
-
-    FREETMPS;
-    LEAVE;
-
-    SvREFCNT_dec(cb);
+    if (0 == cbt->persist) {
+        SvREFCNT_dec(cbt->cb);
+        ngx_queue_remove(&cbt->queue);
+        Safefree(cbt);
+    }
 }
 
 MODULE = EV::Hiredis PACKAGE = EV::Hiredis
@@ -155,6 +235,7 @@ CODE:
 {
     PERL_UNUSED_VAR(class);
     Newxz(RETVAL, sizeof(ev_hiredis_t), ev_hiredis_t);
+    ngx_queue_init(&RETVAL->cb_queue);
     RETVAL->loop = loop;
 }
 OUTPUT:
@@ -177,87 +258,46 @@ CODE:
         SvREFCNT_dec(self->connect_handler);
         self->connect_handler = NULL;
     }
+
+    remove_cb_queue(self);
+
     Safefree(self);
 }
 
 void
 connect(EV::Hiredis self, char* hostname, int port = 6379);
-PREINIT:
-    int r;
-    SV* sv_error = NULL;
 CODE:
 {
     if (NULL != self->ac) {
-        emit_error_str(self, "already connected");
+        croak("already connected");
         return;
     }
 
     self->ac = redisAsyncConnect(hostname, port);
     if (NULL == self->ac) {
-        emit_error_str(self, "cannot allocate memory");
+        croak("cannot allocate memory");
         return;
     }
 
-    self->ac->data = (void*)self;
-
-    if (self->ac->err) {
-        sv_error = sv_2mortal(newSVpvf("connect error: %s", self->ac->errstr));
-        redisAsyncFree(self->ac);
-        self->ac = NULL;
-        emit_error(self, sv_error);
-        return;
-    }
-
-    r = redisLibevAttach(self->loop, self->ac);
-    if (REDIS_OK != r) {
-        redisAsyncFree(self->ac);
-        self->ac = NULL;
-        emit_error_str(self, "connect error: cannot attach libev");
-        return;
-    }
-
-    redisAsyncSetConnectCallback(self->ac, (redisConnectCallback*)EV__hiredis_connect_cb);
-    redisAsyncSetDisconnectCallback(self->ac, (redisDisconnectCallback*)EV__hiredis_disconnect_cb);
+    connect_common(self);
 }
 
 void
 connect_unix(EV::Hiredis self, char* path);
-PREINIT:
-    int r;
-    SV* sv_error = NULL;
 CODE:
 {
     if (NULL != self->ac) {
-        emit_error_str(self, "already connected");
+        croak("already connected");
         return;
     }
 
     self->ac = redisAsyncConnectUnix(path);
     if (NULL == self->ac) {
-        emit_error_str(self, "cannot allocate memory");
+        croak("cannot allocate memory");
         return;
     }
 
-    self->ac->data = (void*)self;
-
-    if (self->ac->err) {
-        sv_error = sv_2mortal(newSVpvf("connect error: %s", self->ac->errstr));
-        redisAsyncFree(self->ac);
-        self->ac = NULL;
-        emit_error(self, sv_error);
-        return;
-    }
-
-    r = redisLibevAttach(self->loop, self->ac);
-    if (REDIS_OK != r) {
-        redisAsyncFree(self->ac);
-        self->ac = NULL;
-        emit_error_str(self, "connect error: cannot attach libev");
-        return;
-    }
-
-    redisAsyncSetConnectCallback(self->ac, (redisConnectCallback*)EV__hiredis_connect_cb);
-    redisAsyncSetDisconnectCallback(self->ac, (redisDisconnectCallback*)EV__hiredis_disconnect_cb);
+    connect_common(self);
 }
 
 void
@@ -320,6 +360,7 @@ PREINIT:
     size_t* argvlen;
     STRLEN len;
     int argc, i;
+    ev_hiredis_cb_t* cbt;
 CODE:
 {
     if (items <= 2) {
@@ -331,6 +372,10 @@ CODE:
         croak("last arguments should be CODE reference");
     }
 
+    if (NULL == self->ac) {
+        croak("connect required before call command");
+    }
+
     argc = items - 2;
     Newx(argv, sizeof(char*) * argc, char*);
     Newx(argvlen, sizeof(size_t) * argc, size_t);
@@ -340,8 +385,20 @@ CODE:
         argvlen[i] = len;
     }
 
+    Newx(cbt, sizeof(ev_hiredis_cb_t), ev_hiredis_cb_t);
+    cbt->cb = SvREFCNT_inc(cb);
+    ngx_queue_init(&cbt->queue);
+    ngx_queue_insert_tail(&self->cb_queue, &cbt->queue);
+
+    if (0 == strcmp(argv[0], "subscribe") || 0 == strcmp(argv[0], "psubscribe")) {
+        cbt->persist = 1;
+    }
+    else {
+        cbt->persist = 0;
+    }
+
     RETVAL = redisAsyncCommandArgv(
-        self->ac, EV__hiredis_reply_cb, (void*)SvREFCNT_inc(cb),
+        self->ac, EV__hiredis_reply_cb, (void*)cbt,
         argc, (const char**)argv, argvlen
     );
 
