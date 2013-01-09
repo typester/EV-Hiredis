@@ -9,6 +9,7 @@ use Module::Build::Pluggable (
         cc_warnings => 1,
         ppport      => 'src/ppport.h',
     },
+    'ReadmeMarkdownFromPod',
 );
 
 my $build = Module::Build::Pluggable->new(
@@ -30,6 +31,8 @@ my $build = Module::Build::Pluggable->new(
 
     test_files           => (-d '.git' || $ENV{RELEASE_TESTING}) ? 't/ xt/' : 't/',
     recursive_test_files => 1,
+
+    no_index => { 'directory' => [ 'deps' ] },
 );
 
 $build->do_system($Config{make}, '-C', 'deps/hiredis', 'static');
