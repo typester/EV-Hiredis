@@ -4,7 +4,7 @@
       "Daisuke Murase <typester@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120630",
    "license" : [
       "perl_5"
    ],
@@ -22,7 +22,7 @@
       "build" : {
          "requires" : {
             "ExtUtils::CBuilder" : "0",
-            "Module::Build::Pluggable::XSUtil" : "0.01",
+            "Module::Build::Pluggable::XSUtil" : "1.00",
             "Test::Deep" : "0",
             "Test::More" : "0.98",
             "Test::RedisServer" : "0.12",
@@ -31,9 +31,10 @@
       },
       "configure" : {
          "requires" : {
+            "EV::MakeMaker" : "0",
             "ExtUtils::ParseXS" : "2.21",
             "Module::Build" : "0.40",
-            "Module::Build::Pluggable::XSUtil" : "0.01"
+            "Module::Build::Pluggable::XSUtil" : "1.00"
          }
       },
       "runtime" : {
@@ -46,7 +47,7 @@
    "provides" : {
       "EV::Hiredis" : {
          "file" : "lib/EV/Hiredis.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "stable",
@@ -55,5 +56,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }

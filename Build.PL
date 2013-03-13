@@ -18,6 +18,9 @@ my $build = Module::Build::Pluggable->new(
     requires => {
         'EV' => '4.11',
     },
+    configure_requires => {
+        'EV::MakeMaker' => 0,
+    },
     build_requires => {
         'Test::More'        => '0.98',
         'Test::RedisServer' => '0.12',

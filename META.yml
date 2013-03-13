@@ -4,17 +4,18 @@ author:
   - 'Daisuke Murase <typester@cpan.org>'
 build_requires:
   ExtUtils::CBuilder: 0
-  Module::Build::Pluggable::XSUtil: 0.01
+  Module::Build::Pluggable::XSUtil: 1.00
   Test::Deep: 0
   Test::More: 0.98
   Test::RedisServer: 0.12
   Test::TCP: 1.18
 configure_requires:
+  EV::MakeMaker: 0
   ExtUtils::ParseXS: 2.21
   Module::Build: 0.40
-  Module::Build::Pluggable::XSUtil: 0.01
+  Module::Build::Pluggable::XSUtil: 1.00
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120630'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -26,10 +27,10 @@ no_index:
 provides:
   EV::Hiredis:
     file: lib/EV/Hiredis.pm
-    version: 0.01
+    version: 0.02
 requires:
   EV: 4.11
   XSLoader: 0.02
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02
