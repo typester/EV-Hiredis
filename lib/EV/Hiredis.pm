@@ -54,11 +54,11 @@ EV::Hiredis - Asynchronous redis client using hiredis and EV
 
     use EV::Hiredis;
     
-    my $redis = EV::Redis->new;
+    my $redis = EV::Hiredis->new;
     $redis->connect('127.0.0.1');
     
     # or
-    my $redis = EV::Redis->new( host => '127.0.0.1' );
+    my $redis = EV::Hiredis->new( host => '127.0.0.1' );
     
     # command
     $redis->set('foo' => 'bar', sub {
