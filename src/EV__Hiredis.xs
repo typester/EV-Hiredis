@@ -152,7 +152,7 @@ static SV* EV__hiredis_decode_reply(redisReply* reply) {
 
             size_t i;
             for (i = 0; i < reply->elements; i++) {
-                av_push(av, EV__hiredis_decode_reply(reply->element[i]));
+                av_push(av, SvREFCNT_inc(EV__hiredis_decode_reply(reply->element[i])));
             }
             break;
         }
@@ -170,16 +170,17 @@ static void EV__hiredis_reply_cb(redisAsyncContext* c, void* reply, void* privda
     PERL_UNUSED_VAR(c);
 
     cbt      = (ev_hiredis_cb_t*)privdata;
-    sv_undef = sv_2mortal(newSV(0));
 
     if (NULL == reply) {
         fprintf(stderr, "here error: %s\n", c->errstr);
-        sv_err = sv_2mortal(newSVpv(c->errstr, 0));
 
         dSP;
 
         ENTER;
         SAVETMPS;
+
+        sv_undef = sv_2mortal(newSV(0));
+        sv_err = sv_2mortal(newSVpv(c->errstr, 0));
 
         PUSHMARK(SP);
         PUSHs(sv_undef);
@@ -192,15 +193,15 @@ static void EV__hiredis_reply_cb(redisAsyncContext* c, void* reply, void* privda
         LEAVE;
     }
     else {
-        sv_reply = EV__hiredis_decode_reply((redisReply*)reply);
-
         dSP;
 
         ENTER;
         SAVETMPS;
 
         PUSHMARK(SP);
+        sv_reply = EV__hiredis_decode_reply((redisReply*)reply);
         if (((redisReply*)reply)->type == REDIS_REPLY_ERROR) {
+            sv_undef = sv_2mortal(newSV(0));
             PUSHs(sv_undef);
             PUSHs(sv_reply);
         }
