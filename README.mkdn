@@ -6,47 +6,39 @@ EV::Hiredis - Asynchronous redis client using hiredis and EV
 
     use EV::Hiredis;
     
-
-    my $redis = EV::Redis->new;
+    my $redis = EV::Hiredis->new;
     $redis->connect('127.0.0.1');
     
-
     # or
-    my $redis = EV::Redis->new( host => '127.0.0.1' );
+    my $redis = EV::Hiredis->new( host => '127.0.0.1' );
     
-
     # command
     $redis->set('foo' => 'bar', sub {
         my ($res, $err) = @_;
     
-
         print $res; # OK
     
-
         $redis->get('foo', sub {
             my ($res, $err) = @_;
     
-
             print $res; # bar
     
-
             $redis->disconnect;
         });
     });
     
-
     # start main loop
     EV::run;
 
 # DESCRIPTION
 
-EV::Hiredis is a asynchronous client for Redis using hiredis and [EV](http://search.cpan.org/perldoc?EV) as backend.
+EV::Hiredis is a asynchronous client for Redis using hiredis and [EV](https://metacpan.org/pod/EV) as backend.
 
-This module connected to [EV](http://search.cpan.org/perldoc?EV) with C-Level interface so that it runs faster.
+This module connected to [EV](https://metacpan.org/pod/EV) with C-Level interface so that it runs faster.
 
 # ANYEVENT INTEGRATION
 
-[AnyEvent](http://search.cpan.org/perldoc?AnyEvent) has a support for EV as its one of backends, so [EV::Hiredis](http://search.cpan.org/perldoc?EV::Hiredis) can be used in your AnyEvent applications seamlessly.
+[AnyEvent](https://metacpan.org/pod/AnyEvent) has a support for EV as its one of backends, so [EV::Hiredis](https://metacpan.org/pod/EV::Hiredis) can be used in your AnyEvent applications seamlessly.
 
 # NO UTF-8 SUPPORT
 
@@ -56,11 +48,9 @@ This module handle all variables as bytes. You should encode your utf-8 string b
 
     use Encode;
     
-
     # set $val
     $redis->set(foo => encode_utf8 $val, sub { ... });
     
-
     # get $val
     $redis->get(foo, sub {
         my $val = decode_utf8 $_[0];
@@ -70,7 +60,7 @@ This module handle all variables as bytes. You should encode your utf-8 string b
 
 ## new(%options);
 
-Create new [EV::Hiredis](http://search.cpan.org/perldoc?EV::Hiredis) instance.
+Create new [EV::Hiredis](https://metacpan.org/pod/EV::Hiredis) instance.
 
 Available `%options` are:
 
