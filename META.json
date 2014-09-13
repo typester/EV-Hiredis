@@ -4,7 +4,7 @@
       "Daisuke Murase <typester@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120630",
+   "generated_by" : "Module::Build version 0.4205",
    "license" : [
       "perl_5"
    ],
@@ -21,8 +21,11 @@
    "prereqs" : {
       "build" : {
          "requires" : {
+            "Devel::Refcount" : "0",
             "ExtUtils::CBuilder" : "0",
-            "Module::Build::Pluggable::XSUtil" : "1.00",
+            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
+            "Module::Build::Pluggable::XSUtil" : "1.02",
+            "Pod::Markdown" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0.98",
             "Test::RedisServer" : "0.12",
@@ -33,8 +36,9 @@
          "requires" : {
             "EV::MakeMaker" : "0",
             "ExtUtils::ParseXS" : "2.21",
-            "Module::Build" : "0.40",
-            "Module::Build::Pluggable::XSUtil" : "1.00"
+            "Module::Build" : "0.42",
+            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
+            "Module::Build::Pluggable::XSUtil" : "1.02"
          }
       },
       "runtime" : {
@@ -42,12 +46,6 @@
             "EV" : "4.11",
             "XSLoader" : "0.02"
          }
-      }
-   },
-   "provides" : {
-      "EV::Hiredis" : {
-         "file" : "lib/EV/Hiredis.pm",
-         "version" : "0.02"
       }
    },
    "release_status" : "stable",

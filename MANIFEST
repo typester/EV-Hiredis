@@ -37,6 +37,7 @@ t/autoload.t
 t/command.t
 t/connect.t
 t/connect_unix.t
+t/leak.t
 t/pubsub.t
 typemap
 xt/pod.t
