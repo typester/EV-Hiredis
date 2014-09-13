@@ -1,6 +1,3 @@
 language: "perl"
 before_install:
-    - cpanm -fn Module::Install::Pluggable::XSUtil
-    - cpanm -fn EV
-    - cpanm --installdeps .
-
+    - cpanm -nq --installdeps --with-develop --with-recommends --with-suggests .
