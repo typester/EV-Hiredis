@@ -26,6 +26,7 @@ my $build = Module::Build::Pluggable->new(
         'Test::RedisServer' => '0.12',
         'Test::TCP'         => '1.18',
         'Test::Deep'        => 0,
+        'Devel::Refcount'   => 0,
     },
     include_dirs       => ['src', 'deps/hiredis', "${installsitearch}/EV", $installsitearch],
     xs_files           => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
