@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 use Test::RedisServer;
-use Test::LeakTrace;
 use Devel::Peek qw/SvREFCNT/;
 use Devel::Refcount qw/refcount/;
 my $redis_server;
