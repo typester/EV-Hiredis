@@ -30,8 +30,6 @@
       "build" : {
          "requires" : {
             "Devel::Refcount" : "0",
-            "ExtUtils::CBuilder" : "0",
-            "Pod::Markdown" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0.98",
             "Test::RedisServer" : "0.12",
@@ -41,7 +39,6 @@
       "configure" : {
          "requires" : {
             "EV::MakeMaker" : "0",
-            "ExtUtils::ParseXS" : "2.21",
             "File::Which" : "0",
             "Module::Build" : "0.38",
             "Module::Build::XSUtil" : "0.02"
@@ -59,7 +56,8 @@
       "runtime" : {
          "requires" : {
             "EV" : "4.11",
-            "XSLoader" : "0.02"
+            "XSLoader" : "0.02",
+            "perl" : "5.008001"
          }
       }
    },
