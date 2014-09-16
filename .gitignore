@@ -6,3 +6,6 @@
 !Build/
 !META.json
 !LICENSE
+MYMETA.*
+/blib/
+/_build/
