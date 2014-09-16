@@ -4,15 +4,13 @@ requires 'XSLoader', '0.02';
 on configure => sub {
     requires 'EV::MakeMaker';
     requires 'ExtUtils::ParseXS', '2.21';
-    requires 'Module::Build::Pluggable::ReadmeMarkdownFromPod', '0.04';
-    requires 'Module::Build::Pluggable::XSUtil', '1.02';
+    requires 'Module::Build::XSUtil' => '>=0.02';
+    requires 'File::Which';
 };
 
 on build => sub {
     requires 'Devel::Refcount';
     requires 'ExtUtils::CBuilder';
-    requires 'Module::Build::Pluggable::ReadmeMarkdownFromPod', '0.04';
-    requires 'Module::Build::Pluggable::XSUtil', '1.02';
     requires 'Pod::Markdown';
     requires 'Test::Deep';
     requires 'Test::More', '0.98';

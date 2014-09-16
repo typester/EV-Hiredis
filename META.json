@@ -22,7 +22,8 @@
          "eg",
          "examples",
          "author",
-         "builder"
+         "builder",
+         "deps"
       ]
    },
    "prereqs" : {
@@ -30,8 +31,6 @@
          "requires" : {
             "Devel::Refcount" : "0",
             "ExtUtils::CBuilder" : "0",
-            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
-            "Module::Build::Pluggable::XSUtil" : "1.02",
             "Pod::Markdown" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0.98",
@@ -43,9 +42,9 @@
          "requires" : {
             "EV::MakeMaker" : "0",
             "ExtUtils::ParseXS" : "2.21",
+            "File::Which" : "0",
             "Module::Build" : "0.38",
-            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
-            "Module::Build::Pluggable::XSUtil" : "1.02"
+            "Module::Build::XSUtil" : "0.02"
          }
       },
       "develop" : {
