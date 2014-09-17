@@ -3,8 +3,8 @@
    "author" : [
       "Daisuke Murase <typester@cpan.org>"
    ],
-   "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4205",
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v2.1.1, CPAN::Meta::Converter version 2.142060",
    "license" : [
       "perl_5"
    ],
@@ -15,6 +15,14 @@
    "name" : "EV-Hiredis",
    "no_index" : {
       "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author",
+         "builder",
          "deps"
       ]
    },
@@ -22,10 +30,6 @@
       "build" : {
          "requires" : {
             "Devel::Refcount" : "0",
-            "ExtUtils::CBuilder" : "0",
-            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
-            "Module::Build::Pluggable::XSUtil" : "1.02",
-            "Pod::Markdown" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0.98",
             "Test::RedisServer" : "0.12",
@@ -35,24 +39,43 @@
       "configure" : {
          "requires" : {
             "EV::MakeMaker" : "0",
-            "ExtUtils::ParseXS" : "2.21",
-            "Module::Build" : "0.42",
-            "Module::Build::Pluggable::ReadmeMarkdownFromPod" : "0.04",
-            "Module::Build::Pluggable::XSUtil" : "1.02"
+            "File::Which" : "0",
+            "Module::Build" : "0.38",
+            "Module::Build::XSUtil" : "0.02"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion::Fast" : "0.04",
+            "Test::PAUSE::Permissions" : "0.04",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
          }
       },
       "runtime" : {
          "requires" : {
             "EV" : "4.11",
-            "XSLoader" : "0.02"
+            "XSLoader" : "0.02",
+            "perl" : "5.008001"
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "unstable",
    "resources" : {
-      "license" : [
-         "http://dev.perl.org/licenses/"
-      ]
+      "bugtracker" : {
+         "web" : "https://github.com/shogo82148/EV-Hiredis/issues"
+      },
+      "homepage" : "https://github.com/shogo82148/EV-Hiredis",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/shogo82148/EV-Hiredis.git",
+         "web" : "https://github.com/shogo82148/EV-Hiredis"
+      }
    },
-   "version" : "0.02"
+   "version" : "0.02",
+   "x_contributors" : [
+      "taniwaki-makoto <taniwaki-makoto@kayac.com>",
+      "Ichinose Shogo <shogo82148@gmail.com>"
+   ]
 }
