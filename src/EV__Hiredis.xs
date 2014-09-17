@@ -130,7 +130,7 @@ static void connect_common(EV__Hiredis self) {
 }
 
 static SV* EV__hiredis_decode_reply(redisReply* reply) {
-    SV* res;
+    SV* res = NULL;
 
     switch (reply->type) {
         case REDIS_REPLY_STRING:
