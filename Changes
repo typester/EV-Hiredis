@@ -1,6 +1,9 @@
 Revision history for Perl extension EV::Hiredis
 
 {{$NEXT}}
+     - fix memory leak
+     - fix typo in POD
+     - minil migrate
 
 0.02 2013-03-13T15:07:00+09:00
      - update build req
