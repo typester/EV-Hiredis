@@ -64,13 +64,13 @@
    "release_status" : "unstable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/shogo82148/EV-Hiredis/issues"
+         "web" : "https://github.com/typester/EV-Hiredis/issues"
       },
-      "homepage" : "https://github.com/shogo82148/EV-Hiredis",
+      "homepage" : "https://github.com/typester/EV-Hiredis",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/shogo82148/EV-Hiredis.git",
-         "web" : "https://github.com/shogo82148/EV-Hiredis"
+         "url" : "git://github.com/typester/EV-Hiredis.git",
+         "web" : "https://github.com/typester/EV-Hiredis"
       }
    },
    "version" : "0.03",
