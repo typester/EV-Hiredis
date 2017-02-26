@@ -16,6 +16,7 @@ sub new {
         xs_files             => { 'src/EV__Hiredis.xs' => 'lib/EV/Hiredis.xs' },
         include_dirs         => ['src', 'deps/hiredis', "${installsitearch}/EV", $installsitearch],
         extra_linker_flags   => ["deps/hiredis/libhiredis$Config{lib_ext}"],
+        needs_compiler_c99   => 1,
     );
 
     my $make;
