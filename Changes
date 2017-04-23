@@ -1,6 +1,8 @@
 Revision history for Perl extension EV::Hiredis
 
 {{$NEXT}}
+
+0.04 2017-04-23T10:08:16Z
      - Fix build issue on newer Perl
 
 0.03 2014-09-18T09:38:04Z

@@ -73,7 +73,7 @@
          "web" : "https://github.com/typester/EV-Hiredis"
       }
    },
-   "version" : "0.03",
+   "version" : "0.04",
    "x_contributors" : [
       "taniwaki-makoto <taniwaki-makoto@kayac.com>",
       "Ichinose Shogo <shogo82148@gmail.com>"
