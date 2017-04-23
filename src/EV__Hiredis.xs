@@ -231,10 +231,10 @@ BOOT:
 }
 
 EV::Hiredis
-_new(char* class, EV::Loop loop);
+_new(char* cls, EV::Loop loop);
 CODE:
 {
-    PERL_UNUSED_VAR(class);
+    PERL_UNUSED_VAR(cls);
     Newxz(RETVAL, sizeof(ev_hiredis_t), ev_hiredis_t);
     ngx_queue_init(&RETVAL->cb_queue);
     RETVAL->loop = loop;
