@@ -1,0 +1,128 @@
+name: "Test"
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  test-xt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: git submodule init
+        run: |
+          git submodule init
+          git submodule update --recursive
+
+      - name: Set up Perl ${{ matrix.perl }}
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: "5.36"
+          install-modules-with: cpm
+          install-modules-args: --with-develop --with-configure
+          install-modules: |
+            Minilla
+            Test::CPAN::Meta
+            Test::Pod
+            Test::MinimumVersion::Fast
+
+      - name: Set up Redis
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: "7.0"
+          auto-start: false
+
+      - name: Test
+        run: |
+          minil test --all
+
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: list
+        id: set-matrix
+        run: |
+          from __future__ import print_function
+          import json
+          perl = [
+              '5.36',
+              '5.34',
+              '5.32',
+              '5.30',
+              '5.28',
+              '5.26',
+              '5.24',
+              '5.22',
+              '5.20',
+              '5.18',
+              '5.16',
+              '5.14',
+              '5.12',
+              '5.10'
+          ]
+          redis = [
+              '7.0',
+              '6.2',
+              '6.0',
+              '5.0',
+              '4.0',
+              '3.2',
+              '3.0',
+              '2.8',
+          ]
+          includes = []
+          for r in redis:
+              includes.append({'perl': perl[0], 'redis': r, 'os': 'macos-latest'})
+          matrix = {
+              'perl': perl,
+              'redis': redis,
+              'os': ['ubuntu-latest'],
+              'include': includes
+          }
+          output = json.dumps(matrix, separators=(',', ':'))
+          print('::set-output name=matrix::{0}'.format(output))
+        shell: python
+
+  test:
+    runs-on: ${{ matrix.os }}
+    needs: list
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.list.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: git submodule init
+        run: |
+          git submodule init
+          git submodule update --recursive
+
+      - name: Set up Perl ${{ matrix.perl }}
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+          install-modules-with: cpm
+          install-modules-args: --with-develop --with-configure
+          # xxx: we not depend URI directly, however install it explicitly.
+          # because cpm sometimes installs old version of URI.
+          install-modules: Minilla URI
+
+      - name: Set up Redis ${{ matrix.redis }}
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: ${{ matrix.redis }}
+          auto-start: false
+
+      - name: Test
+        run: |
+          minil test --norelease --noauthor --noautomated
