@@ -1,6 +1,7 @@
 Revision history for Perl extension EV::Hiredis
 
 {{$NEXT}}
+     - bump ppport.h Version 3.68
      - bump hiredis v1.0.2
 
 0.04 2017-04-23T10:08:16Z
