@@ -9,3 +9,6 @@
 MYMETA.*
 /blib/
 /_build/
+/lib/EV/Hiredis.c
+/lib/EV/Hiredis.o
+/lib/EV/Hiredis.xs
