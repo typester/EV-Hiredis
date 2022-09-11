@@ -77,8 +77,13 @@ static void EV__hiredis_connect_cb(redisAsyncContext* c, int status) {
     else {
         if (NULL == self->connect_handler) return;
 
+        dSP;
+
         ENTER;
         SAVETMPS;
+
+        PUSHMARK(SP);
+        PUTBACK;
 
         call_sv(self->connect_handler, G_DISCARD);
 
