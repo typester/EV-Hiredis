@@ -46,8 +46,8 @@ jobs:
       - name: list
         id: set-matrix
         run: |
-          from __future__ import print_function
           import json
+          import os
           perl = [
               '5.36',
               '5.34',
