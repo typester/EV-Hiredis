@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up Perl ${{ matrix.perl }}
+      - name: Set up Perl
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: "5.36"
